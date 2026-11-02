@@ -67,8 +67,29 @@ def get_lora_target_modules():
     # TODO: return the list of attention projection module names LoRA should adapt
     return ["q_proj", "k_proj", "v_proj", "o_proj"]
 
-# Step 6 - attach_lora_adapters (not yet solved)
-# TODO: implement
+# Step 6 - attach_lora_adapters
+from unsloth import FastLanguageModel
+
+def attach_lora_adapters(model, r=8, lora_alpha=16, target_modules=None):
+    """Wrap the base model with LoRA adapters and return the PEFT model."""
+    # TODO: wrap `model` with LoRA via FastLanguageModel.get_peft_model using r, lora_alpha, target_modules
+    if target_modules is None:
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+
+    peft_model = FastLanguageModel.get_peft_model(
+        model = model,
+        r = r,
+        target_modules = target_modules,
+        lora_alpha = lora_alpha,
+        lora_dropout = 0,         # Unsloth optimized: 0 is highly recommended for performance
+        bias = "none",            # Unsloth optimized: "none" prevents overhead
+        use_gradient_checkpointing = "unsloth", # Crucial for saving memory on small GPUs
+        random_state = 3407,      # Ensures reproducible adapter initialization
+        use_rslora = False,       # Standard rank-stabilized LoRA config toggle
+        loftq_config = None,      # Clears initialization quantization config overhead
+    )
+    
+    return peft_model
 
 # Step 7 - count_trainable_parameters (not yet solved)
 # TODO: implement
